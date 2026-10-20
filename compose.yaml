@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: o2o-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5433:5432"
+    volumes:
+      - o2o_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U o2o_user -d o2o_campaigner"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  o2o_postgres_data:
+
+  
+
