@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import InvalidTokenError
@@ -5,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.dependencies import get_db
+from app.models.enums import UserRole
 from app.models.tables import User
 from app.schemas.auth import (
     UserRegister,
@@ -62,6 +65,25 @@ def get_current_user(
         )
 
     return user
+
+
+# ---------- Role authorization ----------
+
+def require_roles(*allowed_roles: UserRole) -> Callable[..., User]:
+    """Require an authenticated user to have one of the allowed roles."""
+
+    def role_checker(
+        current_user: User = Depends(get_current_user),
+    ) -> User:
+        if current_user.role not in {role.value for role in allowed_roles}:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to perform this action",
+            )
+
+        return current_user
+
+    return role_checker
 
 
 # ---------- Register ----------
