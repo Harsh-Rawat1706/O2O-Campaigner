@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -75,6 +76,81 @@ def create_offer(
     )
     db.add(offer)
     db.commit()
+    db.refresh(offer)
+    return offer
+
+
+@router.post(
+    "/{offer_id}/publish",
+    response_model=OfferResponse,
+)
+def publish_offer(
+    offer_id: UUID,
+    current_user: User = Depends(require_roles(UserRole.merchant)),
+    db: Session = Depends(get_db),
+) -> Offer:
+    offer = db.scalar(
+        select(Offer)
+        .join(Store, Offer.store_id == Store.id)
+        .where(
+            Offer.id == offer_id,
+            Store.owner_user_id == current_user.id,
+        )
+        .with_for_update()
+    )
+    if offer is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Offer not found",
+        )
+
+    if offer.status != OfferStatus.draft.value:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Only draft offers can be published",
+        )
+
+    store = db.get(Store, offer.store_id)
+    if (
+        store is None
+        or store.verification_status != StoreVerificationStatus.verified.value
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Offers can only be published for verified stores",
+        )
+
+    now = datetime.now(timezone.utc)
+    if offer.ends_at <= now:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An offer that has already ended cannot be published",
+        )
+
+    new_status = (
+        OfferStatus.scheduled.value
+        if offer.starts_at > now
+        else OfferStatus.active.value
+    )
+    try:
+        offer.status = new_status
+        db.add(
+            AuditLog(
+                actor_user_id=current_user.id,
+                action="offer_published",
+                entity_type="offer",
+                entity_id=offer.id,
+                metadata_={
+                    "previous_status": OfferStatus.draft.value,
+                    "new_status": new_status,
+                },
+            )
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
     db.refresh(offer)
     return offer
 
