@@ -1,0 +1,13 @@
+{
+  "method": "DELETE",
+  "path": "/api/v1/merchant/stores/{store_id}",
+  "path_parameters": {
+    "store_id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72"
+  },
+  "success_response": {
+    "status": 204,
+    "body": null
+  },
+  "auth_required": true,
+  "role": "merchant"
+}

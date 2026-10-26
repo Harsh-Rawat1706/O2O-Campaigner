@@ -1,0 +1,20 @@
+{
+  "method": "POST",
+  "path": "/api/v1/admin/stores/{store_id}/restore",
+  "path_parameters": {
+    "store_id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72"
+  },
+  "request_body": null,
+  "success_response": {
+    "status": 200,
+    "body": {
+      "id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72",
+      "name": "Asha Kirana",
+      "owner_user_id": "6f4019d4-41b6-47f0-b8aa-0714c19f1c20",
+      "verification_status": "pending",
+      "records_retained": true
+    }
+  },
+  "auth_required": true,
+  "role": "admin"
+}

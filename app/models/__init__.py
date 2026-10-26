@@ -6,6 +6,8 @@ from app.models.tables import (
     Voucher,
     VoucherRedemption,
     SalesTransaction,
+    Invoice,
+    InvoiceLineItem,
     CampaignExpense,
     Notification,
     AuditLog,
@@ -19,6 +21,8 @@ __all__ = [
     "Voucher",
     "VoucherRedemption",
     "SalesTransaction",
+    "Invoice",
+    "InvoiceLineItem",
     "CampaignExpense",
     "Notification",
     "AuditLog"

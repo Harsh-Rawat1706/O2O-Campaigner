@@ -1,0 +1,18 @@
+{
+  "method": "GET",
+  "path": "/api/v1/merchant/stores/categories",
+  "success_response": {
+    "status": 200,
+    "body": [
+      {
+        "id": "c8a0c881-4e2f-5229-b1ff-3c6ac5fb1840",
+        "name": "Grocery & Essentials / Kirana & General Store"
+      },
+      {
+        "id": "e64b5098-b660-51a5-8308-a5301d1a2def",
+        "name": "Food & Dining / Vegetarian / Restaurant"
+      }
+    ]
+  },
+  "auth_required": false
+}

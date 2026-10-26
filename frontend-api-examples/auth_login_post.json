@@ -1,0 +1,16 @@
+{
+  "method": "POST",
+  "path": "/api/v1/auth/login",
+  "request_body": {
+    "email": "asha@example.com",
+    "password": "change-this-password"
+  },
+  "success_response": {
+    "status": 200,
+    "body": {
+      "access_token": "<token-returned-by-api>",
+      "token_type": "bearer"
+    }
+  },
+  "auth_required": false
+}

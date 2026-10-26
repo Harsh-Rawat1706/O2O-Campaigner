@@ -1,0 +1,22 @@
+{
+  "method": "POST",
+  "path": "/api/v1/customer/offers/{offer_id}/claim",
+  "path_parameters": {
+    "offer_id": "f1b2c3d4-1234-4234-8234-123456789abc"
+  },
+  "request_body": null,
+  "success_response": {
+    "status": 201,
+    "body": {
+      "id": "f264f5b2-fb91-4ad0-b5c4-9fd40284c098",
+      "code": "example-voucher-code",
+      "offer_id": "f1b2c3d4-1234-4234-8234-123456789abc",
+      "store_id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72",
+      "status": "claimed",
+      "claimed_at": "2026-10-26T10:00:00Z",
+      "expires_at": "2026-10-26T14:00:00Z"
+    }
+  },
+  "auth_required": true,
+  "role": "customer"
+}

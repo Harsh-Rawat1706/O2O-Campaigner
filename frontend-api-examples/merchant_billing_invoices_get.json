@@ -1,0 +1,15 @@
+{
+  "method": "GET",
+  "path": "/api/v1/merchant/billing/invoices",
+  "query_parameters": {
+    "payment_status": "unpaid",
+    "limit": 20,
+    "offset": 0
+  },
+  "success_response": {
+    "status": 200,
+    "body": []
+  },
+  "auth_required": true,
+  "role": "merchant"
+}

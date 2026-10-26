@@ -1,0 +1,23 @@
+{
+  "method": "GET",
+  "path": "/api/v1/admin/merchants",
+  "query_parameters": {
+    "is_active": true,
+    "limit": 50,
+    "offset": 0
+  },
+  "success_response": {
+    "status": 200,
+    "body": [
+      {
+        "id": "6f4019d4-41b6-47f0-b8aa-0714c19f1c20",
+        "name": "Asha Merchant",
+        "email": "asha@example.com",
+        "role": "merchant",
+        "is_active": true
+      }
+    ]
+  },
+  "auth_required": true,
+  "role": "admin"
+}

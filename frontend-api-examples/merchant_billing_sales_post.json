@@ -1,0 +1,24 @@
+{
+  "method": "POST",
+  "path": "/api/v1/merchant/billing/sales",
+  "request_body": {
+    "store_id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72",
+    "gross_amount_paise": 12500
+  },
+  "success_response": {
+    "status": 201,
+    "body": {
+      "id": "87f10c0f-45d7-47f3-aeff-58f4cc3f2978",
+      "store_id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72",
+      "offer_id": null,
+      "voucher_id": null,
+      "gross_amount_paise": 12500,
+      "discount_paise": 0,
+      "net_amount_paise": 12500,
+      "occurred_at": "2026-10-26T09:30:00Z",
+      "data_source": "merchant_entered"
+    }
+  },
+  "auth_required": true,
+  "role": "merchant"
+}

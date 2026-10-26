@@ -1,0 +1,16 @@
+{
+  "method": "GET",
+  "path": "/api/v1/customer/dashboard",
+  "success_response": {
+    "status": 200,
+    "body": {
+      "vouchers_claimed": 4,
+      "vouchers_used": 1,
+      "vouchers_available": 2,
+      "vouchers_expired": 1,
+      "vouchers_cancelled": 0
+    }
+  },
+  "auth_required": true,
+  "role": "customer"
+}

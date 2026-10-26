@@ -1,0 +1,13 @@
+{
+  "method": "DELETE",
+  "path": "/api/v1/merchant/offers/{offer_id}",
+  "path_parameters": {
+    "offer_id": "f1b2c3d4-1234-4234-8234-123456789abc"
+  },
+  "success_response": {
+    "status": 204,
+    "body": null
+  },
+  "auth_required": true,
+  "role": "merchant"
+}

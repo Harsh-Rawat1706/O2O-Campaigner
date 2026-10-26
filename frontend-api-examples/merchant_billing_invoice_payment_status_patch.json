@@ -1,0 +1,37 @@
+{
+  "method": "PATCH",
+  "path": "/api/v1/merchant/billing/invoices/{invoice_code}/payment-status",
+  "path_parameters": {
+    "invoice_code": "INV-98AE31829F7A4B358C"
+  },
+  "request_body": {
+    "payment_status": "paid"
+  },
+  "success_response": {
+    "status": 200,
+    "body": {
+      "id": "61a6382e-08e7-491a-a339-585096be746b",
+      "code": "INV-98AE31829F7A4B358C",
+      "store_id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72",
+      "subtotal_paise": 7000,
+      "discount_paise": 0,
+      "total_paise": 7000,
+      "payment_status": "paid",
+      "issued_at": "2026-10-26T09:00:00Z",
+      "paid_at": "2026-10-26T09:30:00Z",
+      "voucher_id": null,
+      "line_items": [
+        {
+          "id": "5fe5b5e8-6086-4d38-b17a-14d1eefbe2bf",
+          "position": 0,
+          "description": "Maggie noodles",
+          "quantity": 2,
+          "unit_price_paise": 1500,
+          "line_total_paise": 3000
+        }
+      ]
+    }
+  },
+  "auth_required": true,
+  "role": "merchant"
+}

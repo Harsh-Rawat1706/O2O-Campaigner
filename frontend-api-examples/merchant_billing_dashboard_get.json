@@ -1,0 +1,17 @@
+{
+  "method": "GET",
+  "path": "/api/v1/merchant/billing/dashboard",
+  "success_response": {
+    "status": 200,
+    "body": {
+      "invoices_count": 2,
+      "paid_invoices_count": 1,
+      "unpaid_invoices_count": 1,
+      "invoiced_total_paise": 10000,
+      "paid_total_paise": 7000,
+      "unpaid_total_paise": 3000
+    }
+  },
+  "auth_required": true,
+  "role": "merchant"
+}

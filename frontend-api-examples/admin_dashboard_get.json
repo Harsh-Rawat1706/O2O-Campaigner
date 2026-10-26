@@ -1,0 +1,32 @@
+{
+  "method": "GET",
+  "path": "/api/v1/admin/dashboard",
+  "query_parameters": {
+    "offers_limit": 50,
+    "offers_offset": 0
+  },
+  "success_response": {
+    "status": 200,
+    "body": {
+      "merchants_total": 10,
+      "merchants_active": 8,
+      "offers_total": 15,
+      "offers_published": 9,
+      "offers_by_status": {
+        "draft": 6,
+        "active": 5,
+        "scheduled": 2,
+        "expired": 2
+      },
+      "vouchers_claimed": 40,
+      "vouchers_used": 12,
+      "top_offers": [],
+      "offers": [],
+      "merchants_by_performance": [],
+      "offers_offset": 0,
+      "offers_limit": 50
+    }
+  },
+  "auth_required": true,
+  "role": "admin"
+}

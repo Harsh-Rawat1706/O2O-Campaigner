@@ -1,0 +1,16 @@
+{
+  "method": "GET",
+  "path": "/api/v1/auth/me",
+  "success_response": {
+    "status": 200,
+    "body": {
+      "id": "6f4019d4-41b6-47f0-b8aa-0714c19f1c20",
+      "name": "Asha Customer",
+      "email": "asha@example.com",
+      "role": "customer",
+      "is_active": true
+    }
+  },
+  "auth_required": true,
+  "role": "any_active_user"
+}

@@ -167,6 +167,10 @@ class Store(Base):
     address: Mapped[str] = mapped_column(Text, nullable=False)
     lat: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
     lng: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
+    google_maps_link: Mapped[str | None] = mapped_column(
+        String(2048),
+        nullable=True,
+    )
 
     hours: Mapped[dict] = mapped_column(
         JSONB,
@@ -559,6 +563,128 @@ class SalesTransaction(Base):
         CheckConstraint(
             "other_var_cost_paise IS NULL OR other_var_cost_paise >= 0",
             name="sales_transactions_other_var_cost_paise_check",
+        ),
+    )
+
+class Invoice(Base):
+    __tablename__ = "invoices"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    code: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        unique=True,
+    )
+    merchant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    store_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("stores.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    voucher_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("vouchers.id", ondelete="RESTRICT"),
+        nullable=True,
+        unique=True,
+    )
+    subtotal_paise: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    discount_paise: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        server_default=text("0"),
+    )
+    total_paise: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    payment_status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        server_default=text("'unpaid'"),
+    )
+    issued_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("now()"),
+    )
+    paid_at: Mapped[DateTime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    __table_args__ = (
+        Index("idx_invoices_merchant_issued", "merchant_id", "issued_at"),
+        Index("idx_invoices_store_issued", "store_id", "issued_at"),
+        CheckConstraint("subtotal_paise >= 0", name="invoices_subtotal_check"),
+        CheckConstraint("discount_paise >= 0", name="invoices_discount_check"),
+        CheckConstraint("total_paise >= 0", name="invoices_total_check"),
+        CheckConstraint(
+            "discount_paise <= subtotal_paise",
+            name="invoices_discount_within_subtotal_check",
+        ),
+        CheckConstraint(
+            "total_paise = subtotal_paise - discount_paise",
+            name="invoices_total_matches_subtotal_check",
+        ),
+        CheckConstraint(
+            "payment_status IN ('paid', 'unpaid')",
+            name="invoices_payment_status_check",
+        ),
+        CheckConstraint(
+            "(payment_status = 'paid' AND paid_at IS NOT NULL) "
+            "OR (payment_status = 'unpaid' AND paid_at IS NULL)",
+            name="invoices_paid_at_check",
+        ),
+    )
+
+
+class InvoiceLineItem(Base):
+    __tablename__ = "invoice_line_items"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    invoice_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("invoices.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+    description: Mapped[str] = mapped_column(String(200), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit_price_paise: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    line_total_paise: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+    __table_args__ = (
+        Index("idx_invoice_line_items_invoice", "invoice_id"),
+        UniqueConstraint(
+            "invoice_id",
+            "position",
+            name="invoice_line_items_position_key",
+        ),
+        CheckConstraint(
+            "position >= 0",
+            name="invoice_line_items_position_check",
+        ),
+        CheckConstraint("quantity > 0", name="invoice_line_items_quantity_check"),
+        CheckConstraint(
+            "unit_price_paise >= 0",
+            name="invoice_line_items_unit_price_check",
+        ),
+        CheckConstraint(
+            "line_total_paise >= 0",
+            name="invoice_line_items_total_check",
+        ),
+        CheckConstraint(
+            "line_total_paise = quantity * unit_price_paise",
+            name="invoice_line_items_total_matches_check",
         ),
     )
 

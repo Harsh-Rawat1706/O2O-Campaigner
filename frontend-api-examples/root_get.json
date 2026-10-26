@@ -1,0 +1,13 @@
+{
+  "method": "GET",
+  "path": "/",
+  "query_parameters": {},
+  "request_body": null,
+  "success_response": {
+    "status": 200,
+    "body": {
+      "message": "O2O Campaigner API is running"
+    }
+  },
+  "auth_required": false
+}

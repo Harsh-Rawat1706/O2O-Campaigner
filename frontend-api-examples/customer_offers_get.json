@@ -1,0 +1,39 @@
+{
+  "method": "GET",
+  "path": "/api/v1/customer/offers",
+  "query_parameters": {
+    "latitude": 28.7041,
+    "longitude": 77.1025,
+    "radius_km": 2,
+    "category_id": "c8a0c881-4e2f-5229-b1ff-3c6ac5fb1840",
+    "limit": 20,
+    "offset": 0
+  },
+  "success_response": {
+    "status": 200,
+    "body": [
+      {
+        "id": "f1b2c3d4-1234-4234-8234-123456789abc",
+        "title": "₹10 off",
+        "description": "Save on your next visit.",
+        "type": "fixed",
+        "value": 10,
+        "min_order_paise": 10000,
+        "max_discount_paise": null,
+        "starts_at": "2026-10-26T09:00:00Z",
+        "ends_at": "2026-10-26T14:00:00Z",
+        "store": {
+          "id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72",
+          "name": "Asha Kirana",
+          "address": "Rohini Sector 22, Delhi",
+          "lat": "28.704100",
+          "lng": "77.102500",
+          "google_maps_link": "https://maps.app.goo.gl/example",
+          "distance_km": 1.25
+        }
+      }
+    ]
+  },
+  "auth_required": true,
+  "role": "customer"
+}

@@ -1,0 +1,43 @@
+{
+  "method": "POST",
+  "path": "/api/v1/merchant/stores",
+  "request_body": {
+    "name": "Asha Kirana",
+    "address": "Rohini Sector 22, Delhi",
+    "lat": 28.7041,
+    "lng": 77.1025,
+    "category_id": "c8a0c881-4e2f-5229-b1ff-3c6ac5fb1840",
+    "google_maps_link": "https://maps.app.goo.gl/example",
+    "hours": {
+      "monday": {
+        "open": "09:00",
+        "close": "21:00"
+      }
+    },
+    "phone": "8882519873"
+  },
+  "success_response": {
+    "status": 201,
+    "body": {
+      "id": "ea21eb76-502e-414c-b2dd-37ebb8fd1f72",
+      "owner_user_id": "6f4019d4-41b6-47f0-b8aa-0714c19f1c20",
+      "category_id": "c8a0c881-4e2f-5229-b1ff-3c6ac5fb1840",
+      "name": "Asha Kirana",
+      "address": "Rohini Sector 22, Delhi",
+      "lat": "28.704100",
+      "lng": "77.102500",
+      "google_maps_link": "https://maps.app.goo.gl/example",
+      "hours": {
+        "monday": {
+          "open": "09:00",
+          "close": "21:00"
+        }
+      },
+      "phone": "8882519873",
+      "verification_status": "pending",
+      "created_at": "2026-10-26T09:00:00Z"
+    }
+  },
+  "auth_required": true,
+  "role": "merchant"
+}
