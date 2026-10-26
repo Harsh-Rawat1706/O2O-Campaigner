@@ -6,7 +6,7 @@ from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
-from app.db.session import Base
+from app.db.session import Base, DATABASE_URL as APP_DATABASE_URL
 from app.models import *
 
 load_dotenv()
@@ -16,12 +16,11 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
+if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is missing from .env")
 
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+DATABASE_URL = APP_DATABASE_URL
+config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
 
 target_metadata = Base.metadata
 

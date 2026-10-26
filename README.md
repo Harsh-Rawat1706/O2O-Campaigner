@@ -97,6 +97,17 @@ Local URLs:
 - Swagger UI: <http://127.0.0.1:8000/docs>
 - OpenAPI JSON: <http://127.0.0.1:8000/openapi.json>
 
+## Deploy to Render
+
+Render runs the API from the included Dockerfile and should use a separate
+Render PostgreSQL database for persistent data. Do not store PostgreSQL data
+inside the API image. To preserve local test records, create a local database
+dump and restore it to a fresh Render database before deploying the API.
+
+See the [Render deployment guide](./RENDER_DEPLOYMENT.md) for the backup and
+restore commands, environment variable setup, CORS configuration, deployment
+steps, and verification checklist.
+
 ## API overview
 
 Protected endpoints require an access token from `POST /api/v1/auth/login`:
