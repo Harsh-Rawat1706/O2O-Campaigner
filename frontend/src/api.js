@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 export const API_BASE = (
@@ -6,15 +5,16 @@ export const API_BASE = (
   'https://o2o-campaigner.onrender.com/api/v1'
 ).replace(/\/+$/, '');
 
+export const TOKEN_KEY = 'o2o_access_token';
+
 const client = axios.create({
   baseURL: API_BASE,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 30000,
 });
 
 client.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('o2o_access_token');
+  const token = sessionStorage.getItem(TOKEN_KEY);
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -29,189 +29,123 @@ client.interceptors.response.use(
     const status = error?.response?.status;
     const detail = error?.response?.data?.detail;
 
-    const message =
-      typeof detail === 'string'
-        ? detail
-        : Array.isArray(detail)
-          ? detail.map((item) => item.msg).join(', ')
-          : error.message || 'Request failed';
+    const message = typeof detail === 'string'
+      ? detail
+      : Array.isArray(detail)
+        ? detail.map((item) => item.msg || JSON.stringify(item)).join(', ')
+        : detail
+          ? JSON.stringify(detail)
+          : error?.code === 'ECONNABORTED'
+            ? 'The API request timed out. Please try again.'
+            : error?.message || 'Network request failed.';
 
-    if (status === 401) {
-      sessionStorage.removeItem('o2o_access_token');
-    }
+    const normalized = new Error(message);
+    normalized.status = status;
+    normalized.data = error?.response?.data;
+    normalized.originalError = error;
 
-    const errorMessage = status
-      ? `${message} (${status})`
-      : `${message}. If this is a browser CORS error, the backend must allow this frontend origin.`;
-
-    return Promise.reject(new Error(errorMessage));
+    return Promise.reject(normalized);
   },
 );
 
+async function unwrap(promise) {
+  const response = await promise;
+  return response.status === 204 ? null : response.data;
+}
+
 export const api = {
-  get: (path, config) =>
-    client.get(path, config).then((response) => response.data),
-
-  post: (path, body, config) =>
-    client.post(path, body, config).then((response) => response.data),
-
-  patch: (path, body, config) =>
-    client.patch(path, body, config).then((response) => response.data),
-
-  delete: (path, config) =>
-    client.delete(path, config).then((response) =>
-      response.status === 204 ? null : response.data,
-    ),
+  get: (path, config) => unwrap(client.get(path, config)),
+  post: (path, body, config) => unwrap(client.post(path, body, config)),
+  put: (path, body, config) => unwrap(client.put(path, body, config)),
+  patch: (path, body, config) => unwrap(client.patch(path, body, config)),
+  delete: (path, config) => unwrap(client.delete(path, config)),
 };
 
-export async function adminLogin(email, password) {
-  const response = await api.post('/auth/login', {
-    email,
-    password,
-  });
 
-  if (!response?.access_token) {
-    throw new Error('Login response did not contain an access token.');
-  }
+export const adminLogin = (email, password) =>
+  api.post('/auth/login', { email, password });
 
-  sessionStorage.setItem('o2o_access_token', response.access_token);
+export const getCurrentUser = () =>
+  api.get('/auth/me');
 
-  try {
-    const user = await api.get('/auth/me');
 
-    if (user?.role !== 'admin') {
-      sessionStorage.removeItem('o2o_access_token');
-      throw new Error('Access denied. This account is not an admin.');
-    }
+export const getAdminDashboard = (params = {}) =>
+  api.get('/admin/dashboard', { params });
 
-    return {
-      access_token: response.access_token,
-      token_type: response.token_type || 'bearer',
-      user,
-    };
-  } catch (error) {
-    sessionStorage.removeItem('o2o_access_token');
-    throw error;
-  }
-}
+export const getAdminMerchants = (params = {}) =>
+  api.get('/admin/merchants', { params });
 
-export async function getCurrentUser() {
-  return api.get('/auth/me');
-}
+export const deactivateAdminMerchant = (merchantId) =>
+  api.delete(`/admin/merchants/${encodeURIComponent(merchantId)}`);
 
-export async function getAdminDashboard() {
-  return api.get('/admin/dashboard');
-}
+export const restoreAdminMerchant = (merchantId) =>
+  api.post(`/admin/merchants/${encodeURIComponent(merchantId)}/restore`, {});
 
-export async function getAdminMerchants(params = {}) {
-  return api.get('/admin/merchants', {
-    params,
-  });
-}
+export const getAdminPendingStores = (params = {}) =>
+  api.get('/admin/stores/pending', { params });
 
-export async function deactivateAdminMerchant(merchantId) {
-  return api.delete(
-    `/admin/merchants/${encodeURIComponent(merchantId)}`,
-  );
-}
-
-export async function restoreAdminMerchant(merchantId) {
-  return api.post(
-    `/admin/merchants/${encodeURIComponent(merchantId)}/restore`,
-    {},
-  );
-}
-
-export async function getDeletedAdminStores() {
-  return api.get('/admin/stores/deleted');
-}
-
-export async function deleteAdminStore(storeId) {
-  return api.delete(
-    `/admin/stores/${encodeURIComponent(storeId)}`,
-  );
-}
-
-export async function restoreAdminStore(storeId) {
-  return api.post(
-    `/admin/stores/${encodeURIComponent(storeId)}/restore`,
-    {},
-  );
-}
-
-export async function reviewAdminStore(storeId, decision, reason) {
+export const reviewAdminStore = (storeId, decision, reason) => {
   if (!['approve', 'reject'].includes(decision)) {
-    throw new Error('Decision must be approve or reject.');
+    return Promise.reject(
+      new Error('Decision must be "approve" or "reject".'),
+    );
   }
 
-  if (decision === 'reject' && !reason?.trim()) {
-    throw new Error('A reason is required when rejecting a store.');
+  if (decision === 'reject' && !String(reason || '').trim()) {
+    return Promise.reject(
+      new Error('A reason is required when rejecting a store.'),
+    );
   }
-
-  const body =
-    decision === 'reject'
-      ? {
-          decision,
-          reason: reason.trim(),
-        }
-      : {
-          decision,
-        };
 
   return api.patch(
     `/admin/stores/${encodeURIComponent(storeId)}/verification`,
-    body,
+    {
+      decision,
+      ...(decision === 'reject'
+        ? { reason: String(reason).trim() }
+        : {}),
+    },
   );
-}
+};
 
-export async function getStoreCategories() {
-  return api.get('/merchant/stores/categories');
-}
+export const deleteAdminStore = (storeId) =>
+  api.delete(`/admin/stores/${encodeURIComponent(storeId)}`);
 
-export function formatMoneyPaise(value) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 2,
-  }).format((Number(value) || 0) / 100);
-}
+export const getDeletedAdminStores = (params = {}) =>
+  api.get('/admin/stores/deleted', { params });
 
-export function formatMoneyRupees(value) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 2,
-  }).format(Number(value) || 0);
-}
+export const restoreAdminStore = (storeId) =>
+  api.post(`/admin/stores/${encodeURIComponent(storeId)}/restore`, {});
 
-export function getBrowserLocation() {
-  return new Promise((resolve, reject) => {
+
+export const getStoreCategories = () =>
+  api.get('/merchant/stores/categories');
+
+
+export const getBrowserLocation = () =>
+  new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      return reject(
-        new Error(
-          'This browser does not support location. Enter your location manually or try another browser.',
-        ),
+      reject(
+        new Error('Geolocation is not supported by this browser.'),
       );
+      return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        resolve({
-          lat: coords.latitude,
-          lng: coords.longitude,
-          accuracy: coords.accuracy,
-        });
-      },
-      (error) => {
-        const message =
-          error.code === 1
-            ? 'Location permission was denied. You can try again or enter a location manually.'
-            : error.code === 2
-              ? 'Your location is unavailable. Try again or enter a location manually.'
-              : 'Location request timed out. Try again.';
-
-        reject(new Error(message));
-      },
+      ({ coords }) => resolve({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        lat: coords.latitude,
+        lng: coords.longitude,
+        accuracy: coords.accuracy,
+      }),
+      (error) => reject(
+        new Error(
+          error.code === error.PERMISSION_DENIED
+            ? 'Location permission was denied. You can allow location access in browser settings.'
+            : error.message || 'Could not determine your location.',
+        ),
+      ),
       {
         enableHighAccuracy: true,
         timeout: 12000,
@@ -219,4 +153,20 @@ export function getBrowserLocation() {
       },
     );
   });
-}
+
+
+export const formatMoneyPaise = (value) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 2,
+  }).format((Number(value) || 0) / 100);
+
+export const formatMoneyRupees = (value) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 2,
+  }).format(Number(value) || 0);
+
+export default api;
