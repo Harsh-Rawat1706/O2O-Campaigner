@@ -173,6 +173,7 @@ How to use the bundle:
 | `DELETE /api/v1/admin/merchants/{merchant_id}` | [admin_merchants_merchant_id_delete.json](./frontend-api-examples/admin_merchants_merchant_id_delete.json) |
 | `POST /api/v1/admin/merchants/{merchant_id}/restore` | [admin_merchants_merchant_id_restore_post.json](./frontend-api-examples/admin_merchants_merchant_id_restore_post.json) |
 | `DELETE /api/v1/admin/stores/{store_id}` | [admin_stores_store_id_delete.json](./frontend-api-examples/admin_stores_store_id_delete.json) |
+| `GET /api/v1/admin/stores/pending` | [admin_stores_pending_get.json](./frontend-api-examples/admin_stores_pending_get.json) |
 | `GET /api/v1/admin/stores/deleted` | [admin_stores_deleted_get.json](./frontend-api-examples/admin_stores_deleted_get.json) |
 | `POST /api/v1/admin/stores/{store_id}/restore` | [admin_stores_store_id_restore_post.json](./frontend-api-examples/admin_stores_store_id_restore_post.json) |
 | `PATCH /api/v1/admin/stores/{store_id}/verification` | [admin_stores_store_id_verification_patch.json](./frontend-api-examples/admin_stores_store_id_verification_patch.json) |
@@ -752,6 +753,13 @@ POS synchronization, and online payment processing are not included.
 
 All `/api/v1/admin/...` operations below require an admin token. Admin dashboard
 analytics intentionally omit sales amounts and billing data.
+
+### `GET /api/v1/admin/stores/pending`
+
+Lists stores whose verification status is `pending`, ordered oldest first so
+admins can review the longest-waiting submissions. Supports `limit` (default
+50, maximum 100) and `offset` (default 0). Returns the same store fields as the
+merchant store API.
 
 ### `GET /api/v1/admin/merchants`
 

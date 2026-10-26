@@ -20,6 +20,29 @@ router = APIRouter(prefix="/merchant/stores")
 admin_router = APIRouter(prefix="/admin/stores")
 
 
+@admin_router.get(
+    "/pending",
+    response_model=list[StoreResponse],
+    summary="List stores pending verification",
+)
+def list_pending_stores(
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    current_admin: User = Depends(require_roles(UserRole.admin)),
+    db: Session = Depends(get_db),
+) -> list[Store]:
+    statement = (
+        select(Store)
+        .where(
+            Store.verification_status == StoreVerificationStatus.pending.value
+        )
+        .order_by(Store.created_at.asc(), Store.id.asc())
+        .limit(limit)
+        .offset(offset)
+    )
+    return list(db.scalars(statement).all())
+
+
 @router.get(
     "/categories",
     response_model=list[StoreCategoryResponse],
