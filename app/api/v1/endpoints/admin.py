@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.v1.endpoints.auth import require_roles
@@ -9,12 +9,54 @@ from app.db.dependencies import get_db
 from app.models.enums import StoreVerificationStatus, UserRole
 from app.models.tables import AuditLog, Store, User
 from app.schemas.admin import (
+    AdminPromotionRequest,
     MerchantDeactivationResponse,
     MerchantRestorationResponse,
 )
 from app.schemas.auth import UserResponse
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+
+@router.post("/admins", response_model=UserResponse)
+def promote_customer_to_admin(
+    request: AdminPromotionRequest,
+    current_admin: User = Depends(require_roles(UserRole.admin)),
+    db: Session = Depends(get_db),
+) -> User:
+    customer = db.scalar(
+        select(User)
+        .where(func.lower(User.email) == request.email.lower())
+        .with_for_update()
+    )
+    if customer is None or customer.role != UserRole.customer.value:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer account not found",
+        )
+    if not customer.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Inactive customer accounts cannot be promoted",
+        )
+
+    customer.role = UserRole.admin.value
+    db.add(
+        AuditLog(
+            actor_user_id=current_admin.id,
+            action="customer_promoted_to_admin",
+            entity_type="user",
+            entity_id=customer.id,
+            metadata_={"email": customer.email},
+        )
+    )
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    db.refresh(customer)
+    return customer
 
 
 @router.get("/merchants", response_model=list[UserResponse])

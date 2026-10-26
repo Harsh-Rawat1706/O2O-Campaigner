@@ -172,6 +172,7 @@ How to use the bundle:
 | `GET /api/v1/admin/merchants` | [admin_merchants_get.json](./frontend-api-examples/admin_merchants_get.json) |
 | `DELETE /api/v1/admin/merchants/{merchant_id}` | [admin_merchants_merchant_id_delete.json](./frontend-api-examples/admin_merchants_merchant_id_delete.json) |
 | `POST /api/v1/admin/merchants/{merchant_id}/restore` | [admin_merchants_merchant_id_restore_post.json](./frontend-api-examples/admin_merchants_merchant_id_restore_post.json) |
+| `POST /api/v1/admin/admins` | [admin_admins_post.json](./frontend-api-examples/admin_admins_post.json) |
 | `DELETE /api/v1/admin/stores/{store_id}` | [admin_stores_store_id_delete.json](./frontend-api-examples/admin_stores_store_id_delete.json) |
 | `GET /api/v1/admin/stores/pending` | [admin_stores_pending_get.json](./frontend-api-examples/admin_stores_pending_get.json) |
 | `GET /api/v1/admin/stores/deleted` | [admin_stores_deleted_get.json](./frontend-api-examples/admin_stores_deleted_get.json) |
@@ -766,6 +767,22 @@ merchant store API.
 Lists merchants. Optional query parameters: `is_active=true|false`,
 `limit` (default 50, maximum 100), and `offset` (default 0). Use
 `is_active=false` to find deactivated merchants.
+
+### `POST /api/v1/admin/admins`
+
+Promotes an existing active customer account to admin. The account must first
+be registered through the normal signup flow. This action changes the user's
+role and records the promoting admin in the existing audit log; it requires no
+schema migration. Request:
+
+```json
+{
+  "email": "new.admin@example.com"
+}
+```
+
+Returns the promoted user. An account that is not a customer or is inactive
+cannot be promoted.
 
 ### `DELETE /api/v1/admin/merchants/{merchant_id}`
 

@@ -2,6 +2,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel
+from pydantic import EmailStr
 
 from datetime import datetime
 
@@ -21,6 +22,10 @@ class MerchantRestorationResponse(BaseModel):
     email: str
     is_active: bool
     stores_restored: bool
+
+
+class AdminPromotionRequest(BaseModel):
+    email: EmailStr
 
 
 class StoreRestorationResponse(BaseModel):
